@@ -8,17 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
 
-  <!-- ============================================================
-    FIREBASE SETUP — fill these 3 steps before deploying:
-
-    STEP 1: Go to https://console.firebase.google.com
-    STEP 2: Create a new project → Add a web app → copy the config below
-    STEP 3: In Firebase console → Build → Realtime Database → Create database
-            → Start in TEST MODE (allows read/write for 30 days, then set rules)
-
-    Then replace the placeholder values in firebaseConfig below.
-  ============================================================ -->
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -30,453 +19,195 @@
       --text: #1a1a18;
       --text-muted: #888580;
       --text-faint: #b5b2aa;
-      --accent: #1a1a18;
       --accent-bg: #1a1a18;
-      --accent-text: #fafaf8;
       --team-accent: #2d6a4f;
       --team-bg: #f0faf5;
-      --team-border: #b7e4c7;
       --danger: #c0392b;
       --danger-bg: #fdf3f2;
       --tag-bg: #f0efe9;
       --radius: 8px;
-      --radius-lg: 12px;
       --font: 'DM Sans', sans-serif;
       --font-mono: 'DM Mono', monospace;
       --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
     }
 
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      font-size: 14px;
-      line-height: 1.6;
-    }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.6; }
 
-    /* ---------- Layout ---------- */
-    .shell {
-      max-width: 960px;
-      margin: 0 auto;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+    /* ── Login ── */
+    #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 48px 40px; text-align: center; width: 360px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+    .login-logo { width: 44px; height: 44px; background: var(--accent-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+    .login-logo svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .login-title { font-size: 20px; font-weight: 500; letter-spacing: -0.4px; margin-bottom: 6px; }
+    .login-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.6; }
+    .btn-google { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 11px 20px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s, border-color 0.15s, box-shadow 0.15s; letter-spacing: -0.1px; }
+    .btn-google:hover { background: var(--bg); border-color: var(--border-hover); box-shadow: var(--shadow); }
+    .login-note { font-size: 11px; color: var(--text-faint); margin-top: 20px; line-height: 1.6; }
 
-    /* ---------- Header ---------- */
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 28px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+    /* ── App ── */
+    #app-screen { display: none; flex-direction: column; min-height: 100vh; }
+    .shell { max-width: 960px; margin: 0 auto; flex: 1; display: flex; flex-direction: column; width: 100%; }
 
+    header { display: flex; align-items: center; justify-content: space-between; padding: 14px 28px; border-bottom: 1px solid var(--border); background: var(--surface); gap: 12px; flex-wrap: wrap; }
     .header-left { display: flex; align-items: center; gap: 10px; }
-
-    .logo {
-      width: 28px; height: 28px;
-      background: var(--accent-bg);
-      border-radius: 7px;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .logo { width: 28px; height: 28px; background: var(--accent-bg); border-radius: 7px; display: flex; align-items: center; justify-content: center; }
     .logo svg { width: 15px; height: 15px; stroke: #fafaf8; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-    .app-name {
-      font-size: 15px;
-      font-weight: 500;
-      letter-spacing: -0.2px;
-    }
-
-    .header-right { display: flex; align-items: center; gap: 10px; }
-
-    .author-wrap { display: flex; align-items: center; gap: 7px; }
-    .author-wrap label { font-size: 12px; color: var(--text-muted); }
-    .author-input {
-      font-family: var(--font);
-      font-size: 13px;
-      padding: 5px 10px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--bg);
-      color: var(--text);
-      width: 130px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-    .author-input:focus { border-color: var(--border-hover); }
-
-    .status-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--text-faint);
-      transition: background 0.3s;
-    }
+    .app-name { font-size: 15px; font-weight: 500; letter-spacing: -0.2px; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .user-info { display: flex; align-items: center; gap: 8px; }
+    .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
+    .user-fallback { width: 28px; height: 28px; border-radius: 50%; background: var(--tag-bg); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: var(--text-muted); border: 1px solid var(--border); }
+    .user-name { font-size: 13px; color: var(--text-muted); }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); transition: background 0.3s; }
     .status-dot.saved { background: #52b788; }
     .status-dot.saving { background: #f4a261; }
     .status-dot.error { background: var(--danger); }
-
     .status-label { font-size: 12px; color: var(--text-muted); min-width: 44px; }
+    .btn-signout { font-family: var(--font); font-size: 12px; color: var(--text-muted); background: none; border: 1px solid var(--border); border-radius: var(--radius); padding: 5px 10px; cursor: pointer; transition: all 0.15s; }
+    .btn-signout:hover { color: var(--danger); background: var(--danger-bg); border-color: #e8b4b0; }
 
-    /* ---------- Tabs ---------- */
-    .tabs {
-      display: flex;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 28px;
-      gap: 0;
-    }
-
-    .tab-btn {
-      padding: 11px 18px 10px;
-      font-family: var(--font);
-      font-size: 13px;
-      font-weight: 400;
-      color: var(--text-muted);
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      transition: color 0.15s;
-      letter-spacing: -0.1px;
-    }
+    .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 28px; }
+    .tab-btn { padding: 11px 18px 10px; font-family: var(--font); font-size: 13px; font-weight: 400; color: var(--text-muted); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: color 0.15s; letter-spacing: -0.1px; }
     .tab-btn:hover { color: var(--text); }
     .tab-btn.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
     .tab-btn.team.active { color: var(--team-accent); border-bottom-color: var(--team-accent); }
-
-    .tab-count {
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 500;
-      min-width: 18px; height: 18px; padding: 0 5px;
-      border-radius: 20px;
-      background: var(--tag-bg);
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-    }
+    .tab-count { display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 20px; background: var(--tag-bg); color: var(--text-muted); font-family: var(--font-mono); }
     .tab-btn.team.active .tab-count { background: var(--team-bg); color: var(--team-accent); }
 
-    /* ---------- Main ---------- */
-    main {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    /* ---------- Sidebar ---------- */
-    .sidebar {
-      width: 220px;
-      flex-shrink: 0;
-      border-right: 1px solid var(--border);
-      background: var(--surface);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .sidebar-top {
-      padding: 14px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .btn-new {
-      width: 100%;
-      font-family: var(--font);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 8px 14px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      transition: background 0.15s, border-color 0.15s;
-      letter-spacing: -0.1px;
-    }
+    main { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: 220px; flex-shrink: 0; border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; }
+    .sidebar-top { padding: 14px; border-bottom: 1px solid var(--border); }
+    .btn-new { width: 100%; font-family: var(--font); font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background 0.15s, border-color 0.15s; }
     .btn-new:hover { background: var(--tag-bg); border-color: var(--border-hover); }
     .btn-new svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
     .note-list { flex: 1; overflow-y: auto; padding: 8px; }
-
-    .note-item {
-      padding: 10px 12px;
-      border-radius: var(--radius);
-      cursor: pointer;
-      margin-bottom: 2px;
-      transition: background 0.12s;
-      border: 1px solid transparent;
-    }
+    .note-item { padding: 10px 12px; border-radius: var(--radius); cursor: pointer; margin-bottom: 2px; transition: background 0.12s; border: 1px solid transparent; }
     .note-item:hover { background: var(--bg); }
     .note-item.active { background: var(--bg); border-color: var(--border); box-shadow: var(--shadow); }
-
-    .note-item-title {
-      font-size: 13px;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      letter-spacing: -0.1px;
-    }
-    .note-item-preview {
-      font-size: 12px;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-top: 2px;
-    }
-    .note-item-meta {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      margin-top: 4px;
-    }
+    .note-item-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .note-item-preview { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .note-item-meta { display: flex; align-items: center; gap: 5px; margin-top: 4px; }
     .note-date { font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); }
-    .author-pill {
-      font-size: 10px;
-      padding: 1px 6px;
-      border-radius: 20px;
-      background: var(--team-bg);
-      color: var(--team-accent);
-      font-weight: 500;
-    }
+    .author-pill { font-size: 10px; padding: 1px 6px; border-radius: 20px; background: var(--team-bg); color: var(--team-accent); font-weight: 500; }
+    .empty-sidebar { padding: 24px 14px; text-align: center; color: var(--text-faint); font-size: 13px; line-height: 1.7; }
+    .empty-sidebar svg { width: 28px; height: 28px; stroke: var(--text-faint); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; display: block; margin: 0 auto 8px; }
 
-    .empty-sidebar {
-      padding: 24px 14px;
-      text-align: center;
-      color: var(--text-faint);
-      font-size: 13px;
-      line-height: 1.7;
-    }
-    .empty-sidebar svg { width: 28px; height: 28px; stroke: var(--text-faint); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 8px; }
-
-    /* ---------- Editor ---------- */
-    .editor-pane {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: var(--surface);
-    }
-
-    .editor-header {
-      padding: 20px 28px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .title-input {
-      width: 100%;
-      font-family: var(--font);
-      font-size: 22px;
-      font-weight: 500;
-      color: var(--text);
-      background: none;
-      border: none;
-      outline: none;
-      padding: 0 0 16px;
-      letter-spacing: -0.4px;
-      line-height: 1.3;
-    }
+    .editor-pane { flex: 1; display: flex; flex-direction: column; background: var(--surface); }
+    .editor-header { padding: 20px 28px 0; border-bottom: 1px solid var(--border); }
+    .title-input { width: 100%; font-family: var(--font); font-size: 22px; font-weight: 500; color: var(--text); background: none; border: none; outline: none; padding: 0 0 16px; letter-spacing: -0.4px; line-height: 1.3; }
     .title-input::placeholder { color: var(--text-faint); }
-
-    .editor-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 28px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg);
-    }
-    .meta-chip {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-    }
+    .editor-meta { display: flex; align-items: center; gap: 8px; padding: 10px 28px; border-bottom: 1px solid var(--border); background: var(--bg); }
+    .meta-chip { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
     .meta-sep { color: var(--text-faint); }
-
-    .body-input {
-      flex: 1;
-      width: 100%;
-      font-family: var(--font);
-      font-size: 14px;
-      color: var(--text);
-      background: none;
-      border: none;
-      outline: none;
-      padding: 22px 28px;
-      resize: none;
-      line-height: 1.75;
-      min-height: 400px;
-    }
+    .body-input { flex: 1; width: 100%; font-family: var(--font); font-size: 14px; color: var(--text); background: none; border: none; outline: none; padding: 22px 28px; resize: none; line-height: 1.75; min-height: 400px; }
     .body-input::placeholder { color: var(--text-faint); }
-
-    .editor-footer {
-      padding: 12px 28px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      background: var(--bg);
-    }
-
-    .btn-delete {
-      font-family: var(--font);
-      font-size: 12px;
-      color: var(--text-muted);
-      background: none;
-      border: 1px solid transparent;
-      border-radius: var(--radius);
-      padding: 5px 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      transition: all 0.15s;
-    }
+    .editor-footer { padding: 12px 28px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; background: var(--bg); }
+    .btn-delete { font-family: var(--font); font-size: 12px; color: var(--text-muted); background: none; border: 1px solid transparent; border-radius: var(--radius); padding: 5px 10px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; }
     .btn-delete:hover { color: var(--danger); background: var(--danger-bg); border-color: #e8b4b0; }
     .btn-delete svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-    /* ---------- Empty state ---------- */
-    .empty-editor {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-faint);
-      gap: 10px;
-      padding: 40px;
-      text-align: center;
-    }
+    .empty-editor { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-faint); gap: 10px; padding: 40px; text-align: center; }
     .empty-editor svg { width: 40px; height: 40px; stroke: var(--text-faint); fill: none; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.6; }
-    .empty-editor p { font-size: 14px; line-height: 1.7; }
-    .empty-editor .hint { font-size: 12px; color: var(--text-faint); font-family: var(--font-mono); }
+    .empty-editor p { font-size: 14px; }
+    .empty-editor .hint { font-size: 12px; font-family: var(--font-mono); }
 
-    /* ---------- Firebase offline banner ---------- */
-    .banner {
-      padding: 9px 28px;
-      background: #fff8e6;
-      border-bottom: 1px solid #f4d88a;
-      font-size: 12px;
-      color: #7c5c0a;
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
-    .banner.visible { display: flex; }
-    .banner a { color: #7c5c0a; font-weight: 500; }
-
-    /* ---------- Scrollbar ---------- */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
   </style>
 </head>
 <body>
 
-<div class="shell">
-
-  <!-- Header -->
-  <header>
-    <div class="header-left">
-      <div class="logo">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-      </div>
-      <span class="app-name">Notepad</span>
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     </div>
-    <div class="header-right">
-      <div class="author-wrap">
-        <label for="author-input">You are</label>
-        <input class="author-input" id="author-input" type="text" placeholder="Your name…" autocomplete="off" />
-      </div>
-      <div class="status-dot" id="status-dot"></div>
-      <span class="status-label" id="status-label">—</span>
-    </div>
-  </header>
-
-  <!-- Firebase config banner -->
-  <div class="banner" id="firebase-banner">
-    <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Firebase not configured — Team notes won't sync until you add your config.
-    <a href="https://console.firebase.google.com" target="_blank" rel="noopener">Set up Firebase →</a>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab-btn active" id="tab-private" onclick="switchTab('private')">
-      <svg width="13" height="13" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      My notes
-      <span class="tab-count" id="count-private">0</span>
+    <div class="login-title">Team Notepad</div>
+    <div class="login-sub">A shared space for your team's notes.<br>Sign in to get started.</div>
+    <button class="btn-google" id="btn-google-login">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.826.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
     </button>
-    <button class="tab-btn team" id="tab-team" onclick="switchTab('team')">
-      <svg width="13" height="13" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap: round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Team notes
-      <span class="tab-count" id="count-team">0</span>
-    </button>
+    <p class="login-note">Only people with a Google account can access this notepad.</p>
   </div>
-
-  <!-- Main -->
-  <main>
-    <div class="sidebar">
-      <div class="sidebar-top">
-        <button class="btn-new" id="btn-new" onclick="createNote()">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          New note
-        </button>
-      </div>
-      <div class="note-list" id="note-list"></div>
-    </div>
-
-    <div class="editor-pane" id="editor-pane">
-      <!-- Empty state shown by default -->
-      <div class="empty-editor" id="empty-editor">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <p>Select a note or create a new one</p>
-        <span class="hint">← from the sidebar</span>
-      </div>
-      <!-- Editor (hidden until note selected) -->
-      <div id="editor-inner" style="display:none; flex:1; display:none; flex-direction:column;">
-        <div class="editor-header">
-          <input class="title-input" id="note-title" type="text" placeholder="Untitled note" autocomplete="off" />
-        </div>
-        <div class="editor-meta">
-          <span class="meta-chip" id="meta-date">—</span>
-          <span class="meta-sep">·</span>
-          <span class="meta-chip" id="meta-author"></span>
-        </div>
-        <textarea class="body-input" id="note-body" placeholder="Start writing…"></textarea>
-        <div class="editor-footer">
-          <button class="btn-delete" id="btn-delete" onclick="deleteNote()">
-            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-            Delete note
-          </button>
-        </div>
-      </div>
-    </div>
-  </main>
 </div>
 
-<!-- ============================================================
-  Firebase SDK (v9 compat)
-  These load from Google's CDN — keep as-is.
-============================================================ -->
+<!-- APP -->
+<div id="app-screen">
+  <div class="shell">
+    <header>
+      <div class="header-left">
+        <div class="logo"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <span class="app-name">Team Notepad</span>
+      </div>
+      <div class="header-right">
+        <div class="user-info">
+          <img class="user-avatar" id="user-avatar" src="" alt="" style="display:none" />
+          <div class="user-fallback" id="user-fallback" style="display:none"></div>
+          <span class="user-name" id="user-name"></span>
+        </div>
+        <div class="status-dot" id="status-dot"></div>
+        <span class="status-label" id="status-label">—</span>
+        <button class="btn-signout" id="btn-signout">Sign out</button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-private" onclick="switchTab('private')">
+        <svg width="13" height="13" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        My notes <span class="tab-count" id="count-private">0</span>
+      </button>
+      <button class="tab-btn team" id="tab-team" onclick="switchTab('team')">
+        <svg width="13" height="13" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Team notes <span class="tab-count" id="count-team">0</span>
+      </button>
+    </div>
+
+    <main>
+      <div class="sidebar">
+        <div class="sidebar-top">
+          <button class="btn-new" onclick="createNote()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New note
+          </button>
+        </div>
+        <div class="note-list" id="note-list"></div>
+      </div>
+
+      <div class="editor-pane">
+        <div class="empty-editor" id="empty-editor">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <p>Select a note or create a new one</p>
+          <span class="hint">← from the sidebar</span>
+        </div>
+        <div id="editor-inner" style="display:none; flex:1; flex-direction:column;">
+          <div class="editor-header">
+            <input class="title-input" id="note-title" type="text" placeholder="Untitled note" autocomplete="off" />
+          </div>
+          <div class="editor-meta">
+            <span class="meta-chip" id="meta-date">—</span>
+            <span class="meta-sep">·</span>
+            <span class="meta-chip" id="meta-author"></span>
+          </div>
+          <textarea class="body-input" id="note-body" placeholder="Start writing…"></textarea>
+          <div class="editor-footer">
+            <button class="btn-delete" onclick="deleteNote()">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Delete note
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// ============================================================
-//  STEP 1 — Replace these values with your Firebase config.
-//  Get them from: Firebase Console → Project Settings → Your apps
-// ============================================================
 const firebaseConfig = {
   apiKey:            "AIzaSyBdWnzt-lIh1e_0rTvwaYvd4YocWaQt9kQ",
   authDomain:        "notepad-d6dba.firebaseapp.com",
@@ -487,212 +218,170 @@ const firebaseConfig = {
   appId:             "1:612142355472:web:15e288f33f0c12f738e695",
   measurementId:     "G-M3NWQKL4Q9"
 };
-// ============================================================
 
-// ---- State ----
-let activeTab   = 'private';
-let activeId    = null;
-let saveTimer   = null;
-let dbRef       = null;
-let teamNotes   = {};
-let firebaseOK  = false;
+firebase.initializeApp(firebaseConfig);
+const auth     = firebase.auth();
+const provider = new firebase.auth.GoogleAuthProvider();
+const db       = firebase.database();
 
-// ---- Firebase init ----
-function initFirebase() {
-  if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-    document.getElementById('firebase-banner').classList.add('visible');
-    return;
+let currentUser  = null;
+let activeTab    = 'private';
+let activeId     = null;
+let saveTimer    = null;
+let teamNotes    = {};
+let teamListener = null;
+
+// ── Auth ──
+document.getElementById('btn-google-login').addEventListener('click', () => {
+  auth.signInWithPopup(provider).catch(err => alert('Sign-in failed: ' + err.message));
+});
+document.getElementById('btn-signout').addEventListener('click', () => {
+  if (confirm('Sign out?')) auth.signOut();
+});
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    showApp(user);
+    initTeamListener();
+  } else {
+    currentUser = null;
+    if (teamListener) { db.ref('notes').off('value', teamListener); teamListener = null; }
+    showLogin();
   }
-  try {
-    firebase.initializeApp(firebaseConfig);
-    dbRef = firebase.database().ref('notes');
-    dbRef.on('value', snap => {
-      teamNotes = snap.val() || {};
-      firebaseOK = true;
-      setStatus('synced');
-      if (activeTab === 'team') renderList();
-      updateCounts();
-    }, err => {
-      console.error('Firebase error', err);
-      document.getElementById('firebase-banner').classList.add('visible');
-    });
-  } catch(e) {
-    document.getElementById('firebase-banner').classList.add('visible');
-  }
-}
-
-// ---- Author ----
-let authorName = localStorage.getItem('np_author') || '';
-const authorInput = document.getElementById('author-input');
-authorInput.value = authorName;
-authorInput.addEventListener('input', e => {
-  authorName = e.target.value.trim();
-  localStorage.setItem('np_author', authorName);
 });
 
-// ---- Status ----
-function setStatus(state, msg) {
-  const dot   = document.getElementById('status-dot');
-  const label = document.getElementById('status-label');
-  dot.className = 'status-dot';
-  if (state === 'saving')  { dot.classList.add('saving');  label.textContent = 'Saving…'; }
-  else if (state === 'saved')   { dot.classList.add('saved');   label.textContent = 'Saved'; }
-  else if (state === 'synced')  { dot.classList.add('saved');   label.textContent = 'Synced'; }
-  else if (state === 'error')   { dot.classList.add('error');   label.textContent = 'Error'; }
-  else { label.textContent = '—'; }
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display   = 'none';
+}
+function showApp(user) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display   = 'flex';
+  if (user.photoURL) {
+    document.getElementById('user-avatar').src           = user.photoURL;
+    document.getElementById('user-avatar').style.display = 'block';
+    document.getElementById('user-fallback').style.display = 'none';
+  } else {
+    document.getElementById('user-avatar').style.display   = 'none';
+    document.getElementById('user-fallback').style.display = 'flex';
+    document.getElementById('user-fallback').textContent   = (user.displayName || 'U')[0].toUpperCase();
+  }
+  document.getElementById('user-name').textContent = user.displayName || user.email;
+  renderList();
 }
 
-// ---- Private notes (localStorage) ----
-function getPrivate() {
-  try { return JSON.parse(localStorage.getItem('np_private') || '{}'); }
-  catch(e) { return {}; }
-}
-function savePrivate(notes) {
-  localStorage.setItem('np_private', JSON.stringify(notes));
-  setStatus('saved');
+function initTeamListener() {
+  if (teamListener) return;
+  teamListener = db.ref('notes').on('value', snap => {
+    teamNotes = snap.val() || {};
+    if (activeTab === 'team') renderList();
+    updateCounts();
+    setStatus('synced');
+  }, () => setStatus('error'));
 }
 
-// ---- Utils ----
+// ── Utils ──
 function genId() { return 'n' + Date.now() + Math.random().toString(36).slice(2,6); }
 function fmtDate(ts) {
   if (!ts) return '—';
   const d = new Date(ts);
-  const mo = d.toLocaleString('en-IN', { month: 'short' });
-  const dy = String(d.getDate()).padStart(2, '0');
-  const hr = String(d.getHours()).padStart(2, '0');
-  const mn = String(d.getMinutes()).padStart(2, '0');
-  return `${dy} ${mo} · ${hr}:${mn}`;
+  return `${String(d.getDate()).padStart(2,'0')} ${d.toLocaleString('en-IN',{month:'short'})} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function authorLabel() { return currentUser ? (currentUser.displayName || currentUser.email) : ''; }
+
+function setStatus(state) {
+  const dot = document.getElementById('status-dot');
+  const lbl = document.getElementById('status-label');
+  dot.className = 'status-dot';
+  if      (state === 'saving') { dot.classList.add('saving'); lbl.textContent = 'Saving…'; }
+  else if (state === 'saved')  { dot.classList.add('saved');  lbl.textContent = 'Saved'; }
+  else if (state === 'synced') { dot.classList.add('saved');  lbl.textContent = 'Synced'; }
+  else if (state === 'error')  { dot.classList.add('error');  lbl.textContent = 'Error'; }
+  else { lbl.textContent = '—'; }
 }
 
-// ---- Current notes ----
-function getNotes() {
-  return activeTab === 'private' ? getPrivate() : teamNotes;
+function getPrivate() {
+  if (!currentUser) return {};
+  try { return JSON.parse(localStorage.getItem('np_' + currentUser.uid) || '{}'); } catch(e) { return {}; }
+}
+function savePrivate(notes) {
+  if (!currentUser) return;
+  localStorage.setItem('np_' + currentUser.uid, JSON.stringify(notes));
+  setStatus('saved');
 }
 
-// ---- Counts ----
 function updateCounts() {
   document.getElementById('count-private').textContent = Object.keys(getPrivate()).length;
   document.getElementById('count-team').textContent    = Object.keys(teamNotes).length;
 }
 
-// ---- Render sidebar ----
 function renderList() {
-  const notes = getNotes();
-  const ids   = Object.keys(notes).sort((a, b) => (notes[b].updated || 0) - (notes[a].updated || 0));
+  const notes = activeTab === 'private' ? getPrivate() : teamNotes;
+  const ids   = Object.keys(notes).sort((a,b) => (notes[b].updated||0)-(notes[a].updated||0));
   const list  = document.getElementById('note-list');
-
   if (ids.length === 0) {
-    list.innerHTML = `<div class="empty-sidebar">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      No notes yet.<br>Hit <strong>New note</strong> to start.
-    </div>`;
-    showEmpty();
-    updateCounts();
-    return;
+    list.innerHTML = `<div class="empty-sidebar"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>No notes yet.<br>Hit <strong>New note</strong>.</div>`;
+    showEmpty(); updateCounts(); return;
   }
-
   list.innerHTML = ids.map(id => {
-    const n         = notes[id];
-    const active    = id === activeId ? ' active' : '';
-    const preview   = (n.body || '').replace(/\n/g, ' ').slice(0, 55);
-    const authorTag = n.author ? `<span class="author-pill">${n.author}</span>` : '';
+    const n = notes[id], active = id === activeId ? ' active' : '';
+    const preview = (n.body||'').replace(/\n/g,' ').slice(0,55);
+    const pill    = n.author ? `<span class="author-pill">${n.author.split(' ')[0]}</span>` : '';
     return `<div class="note-item${active}" data-id="${id}" onclick="openNote('${id}')">
-      <div class="note-item-title">${n.title || 'Untitled'}</div>
+      <div class="note-item-title">${n.title||'Untitled'}</div>
       ${preview ? `<div class="note-item-preview">${preview}</div>` : ''}
-      <div class="note-item-meta">
-        ${authorTag}
-        <span class="note-date">${fmtDate(n.updated)}</span>
-      </div>
+      <div class="note-item-meta">${pill}<span class="note-date">${fmtDate(n.updated)}</span></div>
     </div>`;
   }).join('');
-
   updateCounts();
-
-  if (activeId && notes[activeId]) {
-    openNote(activeId);
-  } else if (ids.length > 0) {
-    openNote(ids[0]);
-  }
+  if (activeId && notes[activeId]) openNote(activeId);
+  else if (ids.length) openNote(ids[0]);
 }
 
-// ---- Open note ----
 function openNote(id) {
-  const notes = getNotes();
+  const notes = activeTab === 'private' ? getPrivate() : teamNotes;
   if (!notes[id]) return;
   activeId = id;
   const n  = notes[id];
-
-  document.querySelectorAll('.note-item').forEach(el =>
-    el.classList.toggle('active', el.dataset.id === id)
-  );
-
-  document.getElementById('note-title').value = n.title || '';
-  document.getElementById('note-body').value  = n.body  || '';
-  document.getElementById('meta-date').textContent   = n.updated ? fmtDate(n.updated) : '—';
-  document.getElementById('meta-author').textContent = n.author  || '';
-
-  document.getElementById('empty-editor').style.display  = 'none';
-  document.getElementById('editor-inner').style.display  = 'flex';
+  document.querySelectorAll('.note-item').forEach(el => el.classList.toggle('active', el.dataset.id === id));
+  document.getElementById('note-title').value        = n.title  || '';
+  document.getElementById('note-body').value         = n.body   || '';
+  document.getElementById('meta-date').textContent   = fmtDate(n.updated);
+  document.getElementById('meta-author').textContent = n.author || '';
+  document.getElementById('empty-editor').style.display = 'none';
+  document.getElementById('editor-inner').style.display = 'flex';
 }
 
-// ---- Show empty ----
 function showEmpty() {
   activeId = null;
-  document.getElementById('empty-editor').style.display  = 'flex';
-  document.getElementById('editor-inner').style.display  = 'none';
+  document.getElementById('empty-editor').style.display = 'flex';
+  document.getElementById('editor-inner').style.display = 'none';
 }
 
-// ---- Switch tab ----
 function switchTab(tab) {
   activeTab = tab;
   activeId  = null;
   document.getElementById('tab-private').classList.toggle('active', tab === 'private');
   document.getElementById('tab-team').classList.toggle('active',    tab === 'team');
-  showEmpty();
-  renderList();
+  showEmpty(); renderList();
 }
 
-// ---- Create note ----
 function createNote() {
   const id = genId();
-  const n  = { title: '', body: '', created: Date.now(), updated: Date.now(), author: authorName };
-
-  if (activeTab === 'private') {
-    const notes = getPrivate();
-    notes[id]   = n;
-    savePrivate(notes);
-  } else {
-    if (!firebaseOK) { alert('Firebase is not configured yet. Team notes need Firebase.'); return; }
-    teamNotes[id] = n;
-    dbRef.child(id).set(n);
-  }
-
-  activeId = id;
-  renderList();
-  openNote(id);
+  const n  = { title:'', body:'', created:Date.now(), updated:Date.now(), author:authorLabel() };
+  if (activeTab === 'private') { const notes = getPrivate(); notes[id] = n; savePrivate(notes); }
+  else { db.ref('notes/' + id).set(n); }
+  activeId = id; renderList(); openNote(id);
   document.getElementById('note-title').focus();
 }
 
-// ---- Delete note ----
 function deleteNote() {
-  if (!activeId) return;
-  if (!confirm('Delete this note?')) return;
-
-  if (activeTab === 'private') {
-    const notes = getPrivate();
-    delete notes[activeId];
-    savePrivate(notes);
-  } else {
-    delete teamNotes[activeId];
-    dbRef.child(activeId).remove();
-  }
-
-  activeId = null;
-  showEmpty();
-  renderList();
+  if (!activeId || !confirm('Delete this note?')) return;
+  if (activeTab === 'private') { const notes = getPrivate(); delete notes[activeId]; savePrivate(notes); }
+  else { db.ref('notes/' + activeId).remove(); }
+  activeId = null; showEmpty(); renderList();
 }
 
-// ---- Auto-save ----
 function scheduleSave() {
   setStatus('saving');
   if (saveTimer) clearTimeout(saveTimer);
@@ -701,36 +390,19 @@ function scheduleSave() {
 
 function persistCurrent() {
   if (!activeId) return;
-  const title  = document.getElementById('note-title').value;
-  const body   = document.getElementById('note-body').value;
-  const now    = Date.now();
-  const update = { title, body, updated: now, author: authorName };
-
-  document.getElementById('meta-date').textContent   = fmtDate(now);
-  document.getElementById('meta-author').textContent = authorName;
-
+  const update = { title: document.getElementById('note-title').value, body: document.getElementById('note-body').value, updated: Date.now(), author: authorLabel() };
+  document.getElementById('meta-date').textContent   = fmtDate(update.updated);
+  document.getElementById('meta-author').textContent = authorLabel();
   if (activeTab === 'private') {
-    const notes     = getPrivate();
-    if (!notes[activeId]) return;
-    notes[activeId] = { ...notes[activeId], ...update };
-    savePrivate(notes);
-    renderList();
+    const notes = getPrivate(); if (!notes[activeId]) return;
+    notes[activeId] = { ...notes[activeId], ...update }; savePrivate(notes); renderList();
   } else {
-    if (!firebaseOK) return;
-    teamNotes[activeId] = { ...teamNotes[activeId], ...update };
-    dbRef.child(activeId).update(update);
-    setStatus('saved');
-    renderList();
+    db.ref('notes/' + activeId).update(update); setStatus('saved'); renderList();
   }
 }
 
-// ---- Wire inputs ----
 document.getElementById('note-title').addEventListener('input', scheduleSave);
 document.getElementById('note-body').addEventListener('input', scheduleSave);
-
-// ---- Boot ----
-initFirebase();
-renderList();
 </script>
 </body>
 </html>
